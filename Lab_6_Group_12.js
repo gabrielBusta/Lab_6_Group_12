@@ -11,26 +11,25 @@ window.onload = function init() {
   numClicks = 0;
   setUpWebGL();
   setUpEventHandlers();
-  getPointsOnTheCurve();
   render();
 };
 
-function render() {
+function render() { 
   gl.clear(gl.COLOR_BUFFER_BIT);
-  var n = initVertexBuffers(getPointsOnTheCurve());
-  gl.drawArrays(gl.LINE_STRIP, 0, n);
+  var n;
+  for (var i = 0; i < curves.length; i++) {
+    n = initVertexBuffers(curves[i]);
+    gl.drawArrays(gl.LINE_STRIP, 0, n); 
+  }
 }
 
-function getPointsOnTheCurve() {
-  var A = vec2(-0.1875, -0.1796875);
-  var B = vec2(0.30078125, 0.09375);
-  var C = vec2(0.71484375, -0.19140625);
+function getPointsOnTheCurve(A, B, C) {
   var t = 0;
   var currentVector;
   var vectors = [];
   var points = [];
   while (t <= 1) {
-    currentVector = add(add(scale(Math.pow(1 - t, 2), A), scale(2*t*(1 - t), B)), scale(Math.pow(t, 2), C));
+    currentVector = add(add(scale(Math.pow(1 - t, 2), A), scale(2 * t * (1 - t), B)), scale(Math.pow(t, 2), C));
     vectors.push(currentVector);
     t += 0.01;
   }
@@ -55,7 +54,7 @@ function setUpWebGL() {
   var program = initShaders(gl, "vertex-shader", "fragment-shader");
   gl.useProgram(program);
 
-  //Get the storage location of a_Position, assign and enable buffer
+  //Get the storage location of a_Position
   a_Position = gl.getAttribLocation(program, 'a_Position');
   if (a_Position < 0) {
     console.log('Failed to get the storage location of a_Position');
@@ -64,18 +63,21 @@ function setUpWebGL() {
 
 function setUpEventHandlers() {
   canvas.onmousedown = function(e) {
-    controlPoints.push(getClickCoordinates(e));
-    render();
+    if (numClicks < 3) {
+      controlPoints.push(getClickCoordinates(e));
+      numClicks += 1;
+    }
+    if (numClicks == 3) {
+      curves.push(getPointsOnTheCurve(controlPoints[0], controlPoints[1], controlPoints[2]));
+      controlPoints = [];
+      numClicks = 0;
+      render();
+    }
   };
 
   var plusButton = document.getElementById("plusButton");
 
   plusButton.onclick = function(e) {
-    if (numClicks <= 3) {
-      numClicks += 1;
-    } else {
-      numClicks = 0;
-    }
     console.log("plusButton was clicked");
   };
 
@@ -90,6 +92,7 @@ function setUpEventHandlers() {
   clearButton.onclick = function(e) {
     console.log("clearButton was clicked");
     controlPoints = [];
+    curves = [];
     render();
   };
 }
@@ -101,14 +104,14 @@ function getClickCoordinates(e) {
   return vec2(x, y);
 }
 
-function initVertexBuffers(points){
+function initVertexBuffers(points) {
   var n = (points.length) / 2;
   var vertexBuffer = gl.createBuffer();
   if (!vertexBuffer) {
     console.log('Failed to create the buffer object');
   }
 
-  // Bind the buffer object to target;
+  // Bind the buffer object to target
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
 
