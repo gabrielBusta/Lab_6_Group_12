@@ -1,0 +1,10 @@
+.regbtn {
+    background-color: #0099ff;
+    color: white;
+    padding: 0px;
+    font-size: 30px;
+    border: none;
+    cursor: pointer;
+    width: 90px;
+    height: 50px;
+}
