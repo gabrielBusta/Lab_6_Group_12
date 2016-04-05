@@ -3,32 +3,36 @@ var canvas;
 /**
  * A position vector is a vector starting at the origin of the WebGL coordiate system 
  */
-var controlPoints; // This array records the position vectors of the 3 most recent user clicks
-var curves; // Each entry in this array contains an array of points representing a curve 
+var controlPoints; // This array holds position vectors of user clicks
+var curve; // This is an array of points representing a curve
+var alpha;
+var steppingFactor;
+var n;
 var a_Position;
-var numClicks; // This variable increases by one each time the user clicks on the canvas
 
 window.onload = function init() {
-  curves = [];
   controlPoints = [];
-  numClicks = 0;
+  curve = [];
+  alpha = 1;
+  steppingFactor = -0.01;
   setUpWebGL();
   setUpEventHandlers();
   render();
 };
 
-function render() { 
+function render() {
   gl.clear(gl.COLOR_BUFFER_BIT);
-  var n;
-  /**
-   * For each array of points in the curves array
-   *   1. Place the points of the curve "i" in a vertex buffer
-   *   2. Draw the points in the buffer onto the screen
-   */
-  for (var i = 0; i < curves.length; i++) {
-    n = initVertexBuffers(curves[i]);
-    gl.drawArrays(gl.LINE_STRIP, 0, n); 
+  if (controlPoints.length == 3) {
+    n = initVertexBuffers(getPointsOnTheCurve(controlPoints[0], scale(alpha, controlPoints[1]), controlPoints[2]));
+    gl.drawArrays(gl.LINE_STRIP, 0, n);
+    alpha += steppingFactor;
+    if (alpha <= -1) {
+      steppingFactor *= -1;
+    } else if (alpha >= 1) {
+      steppingFactor *= -1;
+    }
   }
+  window.requestAnimFrame(render);
 }
 
 /**
@@ -71,23 +75,18 @@ function getPointsOnTheCurve(A, B, C) {
 function setUpEventHandlers() {
   canvas.onmousedown = function(e) {
     /**
-     * If the number of click is between 0 and 2 push the position vector
-     * of the click onto the controlPoints array
+     * Record the position vectors of user clicks,
+     * these are the control points used to generate the curve
      */
-    if (numClicks < 3) {
+    if (controlPoints.length < 3) {
       controlPoints.push(getClickCoordinates(e));
-      numClicks += 1;
     }
     /**
-     * If the number of clicks is equal to 3 then the user has provided the position 
+     * If there is 3 control points then the user has provided the position 
      * vectors necessary to generate a curve using the getPointsOnTheCurve function
      */
-    if (numClicks == 3) {
-      curves.push(getPointsOnTheCurve(controlPoints[0], controlPoints[1], controlPoints[2]));
-      // Empty the control points array so the user can push another 3 points onto it
-      controlPoints = [];
-      // Start counting the 3 clicks again
-      numClicks = 0;
+    if (controlPoints.length == 3) {
+      curve = getPointsOnTheCurve(controlPoints[0], controlPoints[1], controlPoints[2]);
       render();
     }
   };
@@ -95,12 +94,14 @@ function setUpEventHandlers() {
   var plusButton = document.getElementById("plusButton");
 
   plusButton.onclick = function(e) {
+    steppingFactor *= 1.25;
     console.log("plusButton was clicked");
   };
 
   var minusButton = document.getElementById("minusButton");
 
   minusButton.onclick = function(e) {
+    steppingFactor *= 0.25;
     console.log("minusButton was clicked");
   };
 
@@ -110,6 +111,7 @@ function setUpEventHandlers() {
     console.log("clearButton was clicked");
     controlPoints = [];
     curves = [];
+    steppingFactor = -0.01;
     render();
   };
 }
