@@ -95,20 +95,17 @@ function setUpEventHandlers() {
 
   plusButton.onclick = function(e) {
     steppingFactor *= 1.25;
-    console.log("plusButton was clicked");
   };
 
   var minusButton = document.getElementById("minusButton");
 
   minusButton.onclick = function(e) {
     steppingFactor *= 0.50;
-    console.log("minusButton was clicked");
   };
 
   var clearButton = document.getElementById("clearButton");
 
   clearButton.onclick = function(e) {
-    console.log("clearButton was clicked");
     controlPoints = [];
     curves = [];
     steppingFactor = -0.01;
