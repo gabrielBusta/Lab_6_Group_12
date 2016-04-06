@@ -22,6 +22,10 @@ window.onload = function init() {
 
 function render() {
   gl.clear(gl.COLOR_BUFFER_BIT);
+  /**
+   * If there is 3 control points then the user has provided the position 
+   * vectors necessary to generate a curve using the getPointsOnTheCurve function
+   */
   if (controlPoints.length == 3) {
     n = initVertexBuffers(getPointsOnTheCurve(controlPoints[0], scale(alpha, controlPoints[1]), controlPoints[2]));
     gl.drawArrays(gl.LINE_STRIP, 0, n);
@@ -81,14 +85,6 @@ function setUpEventHandlers() {
     if (controlPoints.length < 3) {
       controlPoints.push(getClickCoordinates(e));
     }
-    /**
-     * If there is 3 control points then the user has provided the position 
-     * vectors necessary to generate a curve using the getPointsOnTheCurve function
-     */
-    if (controlPoints.length == 3) {
-      curve = getPointsOnTheCurve(controlPoints[0], controlPoints[1], controlPoints[2]);
-      render();
-    }
   };
 
   var plusButton = document.getElementById("plusButton");
@@ -109,7 +105,6 @@ function setUpEventHandlers() {
     controlPoints = [];
     curves = [];
     steppingFactor = -0.01;
-    render();
   };
 }
 
