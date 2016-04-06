@@ -101,7 +101,7 @@ function setUpEventHandlers() {
   var minusButton = document.getElementById("minusButton");
 
   minusButton.onclick = function(e) {
-    steppingFactor *= 0.25;
+    steppingFactor *= 0.50;
     console.log("minusButton was clicked");
   };
 
